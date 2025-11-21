@@ -1,4 +1,4 @@
-import React, { useState } from "react"
+import React, { useState, useEffect } from "react"
 import { Gift, Users, Shuffle, Settings, AlertCircle, CheckCircle2, Loader2 } from "lucide-react"
 
 export default function App() {
@@ -9,6 +9,20 @@ export default function App() {
   const [message, setMessage] = useState("")
   const [showConfig, setShowConfig] = useState(false)
   const [config, setConfig] = useState({ serviceId: "", templateId: "", publicKey: "" })
+
+  // ==== NOVO: Lê as chaves da URL (ou usa fallback vazio) ====
+  useEffect(() => {
+    const urlParams = new URLSearchParams(window.location.search)
+    const s = urlParams.get('s')
+    const t = urlParams.get('t')
+    const k = urlParams.get('k')
+
+    if (s && t && k) {
+      setConfig({ serviceId: s, templateId: t, publicKey: k })
+      setShowConfig(false) // esconde o campo de configuração se vier da URL
+    }
+  }, [])
+  // ==========================================================
 
   const add = () => {
     if (!name.trim() || !email.trim()) return setMessage("Preenche tudo!")
@@ -21,7 +35,7 @@ export default function App() {
 
   const draw = async () => {
     if (participants.length < 3) return setMessage("Mínimo 3 pessoas!")
-    if (!config.serviceId || !config.templateId || !config.publicKey) return setMessage("Configura o EmailJS primeiro!")
+    if (!config.serviceId || !config.templateId || !config.publicKey) return setMessage("Falta configurar o EmailJS!")
 
     setLoading(true)
     let shuffled = participants
@@ -47,7 +61,7 @@ export default function App() {
       await new Promise(r => setTimeout(r, 600))
     }
     setLoading(false)
-    setMessage("Sorteio enviado com sucesso! 🎉")
+    setMessage("Sorteio enviado com sucesso!")
     setTimeout(() => { setParticipants([]); setMessage("") }, 5000)
   }
 
